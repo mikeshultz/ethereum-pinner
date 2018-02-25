@@ -19,10 +19,13 @@ the instance they're pointed at.  On startup, it will also go over all
 historical events for the contract and pin any hashes it sees, allowing you to 
 add new IPFS nodes to the network as you need.
 
-Pinner listens for events.  They don't need to match any signature, but they 
-do need to provide an IPFS hash as bytes32.  For example: 
+The events don't need to match any signature, but they do need to provide an 
+IPFS hash as bytes32.  For example, a solidity event: 
 
     event FileAdded(bytes32 ipfsHash);
+
+For details on IPFS hash conversion so it will work with storage in a contract, 
+see [docs/IPFS_hash_conversion.md](docs/IPFS_hash_conversion.md).
 
 ## Install
 
