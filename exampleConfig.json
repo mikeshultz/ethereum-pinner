@@ -1,0 +1,15 @@
+{
+    "jsonrpc": "https://mainnet.infura.io/",
+    "contracts": [
+        {
+            "address": "0x7448d96e5348d149deadbeef760948998b9db3d5",
+            "events": [
+                {
+                    "name": "Post",
+                    "hashParam": "contentHash"
+                }
+            ],
+            "abi": [{"anonymous":false,"inputs":[{"indexed":false,"name":"contentHash","type":"bytes32"}],"name":"Post","type":"event"}]
+        }
+    ]
+}
