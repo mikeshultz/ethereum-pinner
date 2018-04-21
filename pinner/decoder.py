@@ -41,7 +41,7 @@ class EventDecoder(object):
                 inputs = ','.join([','.join(indexed_list), ','.join(inputs_list)])
                 sig = "{}({})".format(part['name'], inputs)
 
-                sig_hash = add_0x_prefix(binascii.hexlify(keccak(sig)))
+                sig_hash = add_0x_prefix(binascii.hexlify(keccak(text=sig)).decode('utf-8'))
                 self.topics.append(sig_hash)
                 self.sig_lookup[sig_hash] = sig
                 self.name_lookup[sig_hash] = part['name']

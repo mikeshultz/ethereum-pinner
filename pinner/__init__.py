@@ -10,7 +10,7 @@ import requests
 import base58
 import ipfsapi
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
-from eth_utils.hexidecimal import decode_hex
+from eth_utils.hexadecimal import decode_hex
 from .decoder import EventDecoder
 
 log = logging.getLogger('pinner')
