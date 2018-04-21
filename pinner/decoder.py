@@ -26,7 +26,6 @@ class EventDecoder(object):
         """ Process the ABI into signatures/topics we can use """
         for part in abi:
             if part['type'] == 'event':
-                #log.debug("Processing ABI event %s", part['name'])
                 indexed_list = [x['type'] for x in part['inputs'] if x.get('indexed')] 
                 for i in range(0,len(indexed_list)):
                     if indexed_list[i] == 'uint':
@@ -51,8 +50,6 @@ class EventDecoder(object):
                     "indexed_types": indexed_list,
                     "data_types": inputs_list
                 }
-        #log.debug("self.topics: %s", self.topics)
-        #log.debug("self.inputs: %s", self.inputs)
 
     def decode_event(self, topic, indexed, data):
         result = {}
@@ -92,15 +89,6 @@ class EventDecoder(object):
         log.debug("Processing transaction %s topic %s", evnt['transactionHash'], topic)
         
         if topic in self.topics:
-            #log.debug("decode_abi(%s, %s)", self.inputs[topic]['types'], evnt['data'])
-            #vals = decode_abi(self.inputs[topic]['types'], evnt['data'])
-            #if len(vals) > 0:
-            #    i = 0
-            #    vals_dict = {}
-            #    for v in vals:
-            #      vals_dict[self.topics[i]] = v
-            #    return v
-            #raise Exception("Unable to decode event")
             decoded_event = self.decode_event(topic, evnt['topics'][1:], evnt['data'])
             event = {
                 "name": self.name_lookup[topic],
