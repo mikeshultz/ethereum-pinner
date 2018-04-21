@@ -1,0 +1,12 @@
+version: '3.2'
+services:
+  go-ipfs:
+    build: ./docker/go-ipfs
+    ports:
+     - "4001:4001"
+    volumes:
+      - /data/ipfs:/data/ipfs
+  pinner:
+    build: .
+    depends_on: 
+      - go-ipfs

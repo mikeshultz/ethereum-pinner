@@ -1,0 +1,7 @@
+{
+  "Datastore": {
+    "StorageMax": "10GB",
+    "Type": "leveldb",
+    "Path": "/blocks"
+  }
+}
