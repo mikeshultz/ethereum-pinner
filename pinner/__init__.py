@@ -14,7 +14,7 @@ from eth_utils.hexadecimal import decode_hex
 from .decoder import EventDecoder
 
 log = logging.getLogger('pinner')
-
+log.setLevel(logging.DEBUG)
 
 class Event(object):
     """ Simple event object """
@@ -90,12 +90,13 @@ class ContractListener(object):
             for event in processed_events:
                 if event['name'] in self.events:
                     hash_hex = event['args'][self.event_param[event['name']]]
-                    ipfs_hex = '1220' + hash_hex[2:]
+                    ipfs_hex = '1220' + decode_hex(hash_hex).decode('utf-8')[2:]
                     b58_hash = base58.b58encode(decode_hex(ipfs_hex))
                     hashes.append(b58_hash)
 
             if len(hashes) > 0:
-                self.block_number = result['result'][-1]['blockNumber']
+                self.block_number = hex(int(result['result'][-1]['blockNumber'], 16) + 1)
+                log.debug('New start block {}'.format(self.block_number))
             log.info("Total IPFS Hashes found: %s", len(hashes))
             log.debug("Hashes found: %s", hashes)
 
@@ -139,6 +140,8 @@ def main():
         json_config = json.load(config_file)
 
     threads = []
+
+    log.info("Connecting to Ethereum provider {}".format(json_config['jsonrpc']))
 
     with ThreadPoolExecutor(max_workers=len(json_config)) as pooler:
         for contract in json_config['contracts']:

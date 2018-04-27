@@ -38,10 +38,12 @@ class EventDecoder(object):
 
                 names_list = [x['name'] for x in part['inputs']]
 
-                inputs = ','.join([','.join(indexed_list), ','.join(inputs_list)])
+                inputs = ','.join(indexed_list + inputs_list)
                 sig = "{}({})".format(part['name'], inputs)
 
-                sig_hash = add_0x_prefix(binascii.hexlify(keccak(text=sig)).decode('utf-8'))
+                log.debug("Tracking Event Signature: {}".format(sig))
+
+                sig_hash = add_0x_prefix(binascii.hexlify(keccak(text=sig)).decode('utf-8')).encode('utf-8')
                 self.topics.append(sig_hash)
                 self.sig_lookup[sig_hash] = sig
                 self.name_lookup[sig_hash] = part['name']
@@ -62,14 +64,14 @@ class EventDecoder(object):
             elif this_type in ['address', 'string', 'bytes32']:
                 if this_type == 'bytes32':
                     log.debug("Decoding bytes32 value!!!!!!!!!!!!! %s", indexed[i])
-                    result[self.inputs[topic]['names'][i]] = encode_hex(indexed[i])
+                    result[self.inputs[topic]['names'][i]] = encode_hex(indexed[i].encode('utf-8'))
                 else:
-                    result[self.inputs[topic]['names'][i]] = decode_hex(indexed[i])
+                    result[self.inputs[topic]['names'][i]] = decode_hex(indexed[i].encode('utf-8'))
             else:
                 log.warn("No handler for type")
 
 
-        data_vals = decode_abi(self.inputs[topic]['data_types'], data)
+        data_vals = decode_abi(self.inputs[topic]['data_types'], data.encode('utf-8'))
         for i in range(0, len(self.inputs[topic]['data_types'])):
             this_type = self.inputs[topic]['data_types'][i]
             if this_type == 'bytes32':
@@ -87,7 +89,7 @@ class EventDecoder(object):
             topic = topic.encode('utf-8')
         
         log.debug("Processing transaction %s topic %s", evnt['transactionHash'], topic)
-        
+
         if topic in self.topics:
             decoded_event = self.decode_event(topic, evnt['topics'][1:], evnt['data'])
             event = {
