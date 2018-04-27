@@ -9,6 +9,6 @@ RUN python setup.py install
 
 ARG CONFIG_FILE=exampleConfig.json
 
-COPY $CONFIG_FILE ipfsconf.json
+COPY $CONFIG_FILE pinner.json
 
-CMD [ "pinner", "/usr/src/pinner/ipfsconf.json", "go-ipfs" ]
+CMD [ "pinner", "/usr/src/pinner/pinner.json", "go-ipfs" ]
