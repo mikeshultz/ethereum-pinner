@@ -32,7 +32,21 @@ class ContractListener(object):
         self.future = Future()
         self.running = True
         self.decoder = EventDecoder(contract['abi'])
-        self.ipfs = ipfsapi.connect(ipfs_server, ipfs_port)
+        self.ipfs = None
+
+        # Connect to IPFS and be delay-tollerant for docker implementations
+        ipfs_retries = 5
+        ipfs_retry_count = 0
+        while self.ipfs is None:
+            try:
+                self.ipfs = ipfsapi.connect(ipfs_server, ipfs_port)
+            except ipfsapi.exceptions.ConnectionError:
+                log.debug("Error connecting to IPFS.  Retrying in 3s...")
+            
+            # Cool down for 3s
+            time.sleep(3)
+
+            ipfs_retry_count += 1
 
         self.events = [x['name'] for x in self.contract['events']]
         self.event_param = {}
