@@ -104,7 +104,7 @@ class ContractListener(object):
             for event in processed_events:
                 if event['name'] in self.events:
                     hash_hex = event['args'][self.event_param[event['name']]]
-                    ipfs_hex = '1220' + decode_hex(hash_hex).decode('utf-8')[2:]
+                    ipfs_hex = '1220' + hash_hex[2:]
                     b58_hash = base58.b58encode(decode_hex(ipfs_hex))
                     hashes.append(b58_hash)
 
