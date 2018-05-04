@@ -66,7 +66,8 @@ class EventDecoder(object):
                     log.debug("Decoding bytes32 value!!!!!!!!!!!!! %s", indexed[i])
                     result[self.inputs[topic]['names'][i]] = encode_hex(indexed[i].encode('utf-8'))
                 else:
-                    result[self.inputs[topic]['names'][i]] = decode_hex(indexed[i].encode('utf-8'))
+                    log.debug("Decoding bytes32 value %s", indexed[i])
+                    result[self.inputs[topic]['names'][i]] = decode_hex(indexed[i])
             else:
                 log.warn("No handler for type")
 
