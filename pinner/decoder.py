@@ -71,7 +71,7 @@ class EventDecoder(object):
                 log.warn("No handler for type")
 
 
-        data_vals = decode_abi(self.inputs[topic]['data_types'], data.encode('utf-8'))
+        data_vals = decode_abi(self.inputs[topic]['data_types'], decode_hex(data))
         for i in range(0, len(self.inputs[topic]['data_types'])):
             this_type = self.inputs[topic]['data_types'][i]
             if this_type == 'bytes32':
