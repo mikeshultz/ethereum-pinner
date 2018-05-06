@@ -12,7 +12,7 @@ from concurrent.futures import Future
 from eth_utils.hexadecimal import decode_hex
 from .decoder import EventDecoder
 from .pinner import QUEUE_NAME
-from .utils import create_or_get_queue
+from .queue import RedisQueue
 
 log = logging.getLogger('pinner.listener')
 log.setLevel(logging.DEBUG)
@@ -27,7 +27,7 @@ class ContractListener(object):
     """ ContractListener listens for events from a contract and submits pin 
         requests when needed
     """
-    def __init__(self, contract, jsonrpc_server):
+    def __init__(self, contract, jsonrpc_server, redis_host='localhost', redis_port=6379):
         self.contract = contract
         self.server = jsonrpc_server
         self.future = Future()
@@ -36,11 +36,7 @@ class ContractListener(object):
         self.queue = None
         self.backlog = []
 
-        try:
-            self.queue = create_or_get_queue(QUEUE_NAME)
-        except posix_ipc.PermissionsError as err:
-            log.exception("Unable to open IPC Socket: {}".format(str(err)))
-            raise err
+        self.queue = RedisQueue('hashes', host=redis_host, port=redis_port)
 
         self.events = [x['name'] for x in self.contract['events']]
         self.event_param = {}
@@ -62,7 +58,7 @@ class ContractListener(object):
     def pin(self, file_hash):
         """ Add an MQ job to pin a file hash """
         log.debug("Queuing {}".format(file_hash))
-        return self.queue.send(file_hash)
+        return self.queue.append(file_hash)
 
     def process_logs(self, logs):
         """ Process the logs received from JSON-RPC """
@@ -129,11 +125,9 @@ class ContractListener(object):
                             break
 
             time.sleep(15)
-        self.queue.close()
-        self.queue.unlink()
 
-def process_contract(contract, jsonrpc_server):
+def process_contract(contract, jsonrpc_server, redis_host, redis_port):
     log.debug("process_contract(%s, %s)", contract['address'], jsonrpc_server)
-    listener = ContractListener(contract, jsonrpc_server)
+    listener = ContractListener(contract, jsonrpc_server, redis_host=redis_host, redis_port=redis_port)
     listener.process_events()
     return listener.future
