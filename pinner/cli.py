@@ -20,9 +20,9 @@ def pinner(args=None):
         parser.add_argument('-p', '--ipfs-port', type=int, default=5001, 
                             dest="ipfs_port",
                             help="The IPFS API port to connect to")
-        parser.add_argument('-t', '--timeout', type=int, default=30, 
+        parser.add_argument('-t', '--timeout', type=int, default=60, 
                             dest="timeout",
-                            help="The pin timeout in seconds. Default: 30")
+                            help="The pin timeout in seconds. Default: 60")
         parser.add_argument('-d', '--debug', action='store_true', default=False,
                             help="Show debug output")
 

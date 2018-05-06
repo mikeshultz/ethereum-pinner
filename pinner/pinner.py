@@ -55,13 +55,14 @@ def pin_hash(qmHash, ipfs_conn, queue):
 class Pinner(object):
     """ Listen to the message queue for IPFS files to pin """
 
-    def __init__(self, ipfs_server, ipfs_port=5001, timeout=30):
+    def __init__(self, ipfs_server, ipfs_port=5001, timeout=None):
         self.ipfs = None
         self.queue = None
         self.backlog = []
         self.dest_pins = []
 
-        TIMEOUT = timeout
+        if timeout:
+            TIMEOUT = timeout
 
         # Connect to IPFS and be delay-tollerant for docker implementations
         ipfs_retries = 5
@@ -96,7 +97,6 @@ class Pinner(object):
         """ Process pinner jobs from the message queue """
         while True:
             try:
-                #self.queue.request_notification((process_job, self.queue))
                 message, priority = self.queue.receive()
                 if not message:
                     log.debug("No messages")
