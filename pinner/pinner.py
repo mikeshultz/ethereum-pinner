@@ -3,7 +3,6 @@ import time
 import logging
 import ipfsapi
 import queue
-import posix_ipc
 import threading
 from .queue import RedisQueue
 
