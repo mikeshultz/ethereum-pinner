@@ -15,7 +15,12 @@ services:
   redis:
     build: ./docker/redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6379/"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
     volumes:
       - /data/redis:/data/redis
   pinner:

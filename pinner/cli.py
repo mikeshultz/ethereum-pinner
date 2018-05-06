@@ -21,17 +21,17 @@ def pinner(args=None):
     if not args:
         parser = argparse.ArgumentParser(description='Pin hashes for Ethereum smart contract events.')
         parser.add_argument('ipfs_host', metavar='IPFS_HOST', type=str, 
-                            default='localhost',
-                            help='The root URL for an IPFS API server')
+                            default='127.0.0.1',
+                            help='The hostname or IP of the IPFS node. Default: 127.0.0.1')
         parser.add_argument('-p', '--ipfs-port', type=int, default=5001, 
                             dest="ipfs_port",
                             help="The IPFS API port to connect to")
         parser.add_argument('-w', '--workers', type=int, default=3, 
                             dest="workers",
                             help="Total pinner workers to start. Default: 3")
-        parser.add_argument('-r', '--redis-host', type=str, default="localhost", 
+        parser.add_argument('-r', '--redis-host', type=str, default="127.0.0.1", 
                             dest="redis_host",
-                            help="Redis hostname or IP address. Default: localhost")
+                            help="Redis hostname or IP address. Default: 127.0.0.1")
         parser.add_argument('-q', '--redis-port', type=int, default=6379, 
                             dest="redis_port",
                             help="Redis port. Default: 6379")
@@ -110,8 +110,8 @@ def start_all():
     parser.add_argument('CONFIG', metavar='JSON', type=str, 
                         help='A JSON Configuration file')
     parser.add_argument('ipfs_host', metavar='IPFS_HOST', type=str, 
-                        default='localhost',
-                        help='The root URL for an IPFS API server')
+                        default='127.0.0.1',
+                        help='The hostname or IP of the IPFS node. Default: 127.0.0.1')
     parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help="Show debug output")
     parser.add_argument('-p', '--ipfs-port', type=int, default=5001, 
@@ -120,9 +120,9 @@ def start_all():
     parser.add_argument('-w', '--workers', type=int, default=3, 
                         dest="workers",
                         help="Total pinner workers to start. Default: 3")
-    parser.add_argument('-r', '--redis-host', type=str, default="localhost", 
+    parser.add_argument('-r', '--redis-host', type=str, default="127.0.0.1", 
                         dest="redis_host",
-                        help="Redis hostname or IP address. Default: localhost")
+                        help="Redis hostname or IP address. Default: 127.0.0.1")
     parser.add_argument('-q', '--redis-port', type=int, default=6379, 
                         dest="redis_port",
                         help="Redis port. Default: 6379")
