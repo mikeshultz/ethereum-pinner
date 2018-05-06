@@ -7,7 +7,6 @@ import json
 import logging
 import requests
 import base58
-import posix_ipc
 from concurrent.futures import Future
 from eth_utils.hexadecimal import decode_hex
 from .decoder import EventDecoder
