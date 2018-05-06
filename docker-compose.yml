@@ -21,4 +21,5 @@ services:
   pinner:
     depends_on: 
       - go-ipfs
+      - redis
     build: .
