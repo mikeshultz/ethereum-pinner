@@ -3,13 +3,11 @@ import time
 import logging
 import ipfsapi
 import queue
-import posix_ipc
 import threading
-from .utils import create_or_get_queue
+from .queue import RedisQueue
 
 QUEUE_NAME = '/pinner.ipc'
-TIMEOUT = 30
-TIMEOUT_BAKCLOG = 60
+TIMEOUT = 60
 
 log = logging.getLogger('pinner.pinner')
 log.setLevel(logging.DEBUG)
@@ -55,14 +53,11 @@ def pin_hash(qmHash, ipfs_conn, queue):
 class Pinner(object):
     """ Listen to the message queue for IPFS files to pin """
 
-    def __init__(self, ipfs_server, ipfs_port=5001, timeout=None):
+    def __init__(self, ipfs_server, ipfs_port=5001, redis_host='localhost', redis_port=6379):
         self.ipfs = None
         self.queue = None
         self.backlog = []
         self.dest_pins = []
-
-        if timeout:
-            TIMEOUT = timeout
 
         # Connect to IPFS and be delay-tollerant for docker implementations
         ipfs_retries = 5
@@ -82,11 +77,7 @@ class Pinner(object):
 
             ipfs_retry_count += 1
 
-        try:
-            self.queue = create_or_get_queue(QUEUE_NAME)
-        except posix_ipc.PermissionsError as err:
-            log.exception("Unable to open IPC Socket: {}".format(str(err)))
-            sys.exit(1)
+        self.queue = RedisQueue('hashes', host=redis_host, port=redis_port)
 
         # Get all of the pins on the node
         pins = self.ipfs.pin_ls(type='all').get('Keys')
@@ -97,38 +88,26 @@ class Pinner(object):
         """ Process pinner jobs from the message queue """
         while True:
             try:
-                message, priority = self.queue.receive()
-                if not message:
-                    log.debug("No messages")
-                    # Since we got nothing else to do, process the backlog
-                    if len(self.backlog) > 0:
-                        log.debug("Pinning {} from the backlog".format(message))
-                        message = self.backlog.pop(0)
-                        try:
-                            pin_hash(message, self.ipfs)
-                        except Timeout as err:
-                            log.warning("Timeout has occurred when trying to pin %s. Adding to backlog...", message)
-                            self.backlog.append(message)
+                message = self.queue.pop()
+                if message and message not in self.dest_pins:
+                    log.debug("Starting pin thread for %s", message)
+                    try:
+                        pin_hash(message, self.ipfs)
+                        log.debug("Pinned {}".format(message))
+                    except Timeout as err:
+                        log.warning("Timeout has occurred when trying to pin %s. Returning it to the queue...", message)
+                        self.queue.append(message)
+                elif message in self.dest_pins:
+                    log.debug("Pin exists on destination node.")
                 else:
-                    if len(self.dest_pins) == 0 or message not in self.dest_pins:
-                        log.debug("Starting pin thread for %s", message)
-                        try:
-                            pin_hash(message, self.ipfs)
-                            log.debug("Pinned {}".format(message))
-                        except Timeout as err:
-                            log.warning("Timeout has occurred when trying to pin %s. Returning it to the backlog...", message)
-                            self.backlog.append(message)
-                    else:
-                        log.debug("Pin exists on destination node.")
-                time.sleep(3)
+                    log.debug("No-op")
+                    time.sleep(3)
             except KeyboardInterrupt:
                 log.info("Shutting down at request of user...")
-                self.queue.close()
-                self.queue.unlink()
 
-            log.debug("Items in backlog: %s", len(self.backlog))
+            log.debug("Items in backlog: %s", self.queue.qsize())
 
-def start_pinner(ipfs_host, ipfs_port, timeout):
-    pinner = Pinner(ipfs_host, ipfs_port, timeout)
+def start_pinner(ipfs_host, ipfs_port, redis_host, redis_port):
+    pinner = Pinner(ipfs_host, ipfs_port, redis_host=redis_host, redis_port=redis_port)
     pinner.process_jobs()
 
