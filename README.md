@@ -46,7 +46,7 @@ for an example.
 
 ### Command Line
 
-    usage: pinner [-h] [-p IPFS_PORT] [-d] JSON IPFS_HOST
+    usage: pinner-start [-h] [-d] [-p IPFS_PORT] [-t TIMEOUT] JSON IPFS_HOST
 
     Pin hashes for Ethereum smart contract events.
 
@@ -56,9 +56,11 @@ for an example.
 
     optional arguments:
       -h, --help            show this help message and exit
+      -d, --debug           Show debug output
       -p IPFS_PORT, --ipfs-port IPFS_PORT
                             The IPFS API port to connect to
-      -d, --debug           Show debug output
+      -t TIMEOUT, --timeout TIMEOUT
+                            The pin timeout in seconds. Default: 30
 
 ### Library
 
