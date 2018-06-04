@@ -1,5 +1,7 @@
 # ethereum-pinner
 
+**Moved to https://source.mikes.network/mikeshultz/ethereum-pinner**
+
 Pins IPFS hashes according to events from a contract.  
 
 Everything stored on IPFS isn't guaranteed to stay there unless a file is 
