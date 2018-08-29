@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(name='pinner',
-    version='0.1.0b1',
+    version='0.2.0b1',
     description='Ethereum ipfs pinner',
     long_description=open('README.md').read().strip(),
     author='Mike Shultz',
@@ -25,6 +25,7 @@ setuptools.setup(name='pinner',
             'pinner-start=pinner.cli:start_all',
             'listener=pinner.cli:listener',
             'pinner=pinner.cli:pinner',
+            'pin_one=pinner.pin_one:main',
         ],
     }
 )

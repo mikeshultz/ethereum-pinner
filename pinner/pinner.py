@@ -2,8 +2,7 @@ import sys
 import time
 import logging
 import ipfsapi
-import queue
-import threading
+import subprocess
 from .queue import RedisQueue
 
 QUEUE_NAME = '/pinner.ipc'
@@ -12,42 +11,18 @@ TIMEOUT = 60
 log = logging.getLogger('pinner.pinner')
 log.setLevel(logging.DEBUG)
 
-class Timeout(Exception): pass
-
-
 def quit_function(fn_name):
     log.warning('%s took too long', fn_name)
     sys.stderr.flush()
     #thread.interrupt_main()
     raise Exception("Timeout of some shit")
 
-def timeout(secs):
-    """ Timeout decorator """
-    def outer(fn):
-        def inner(*args, **kwargs):
-            log.debug("Starting thread timer for %ss", secs)
-            
-            q = kwargs['queue'] = queue.Queue()
-            timer = threading.Thread(target=fn, args=args, kwargs=kwargs)
-            timer.start()
-            timer.join(timeout=secs)
-            while timer.is_alive():
-                raise Timeout("TIMMMMEEEEOUOUUUUUTTTT")
-            retval = q.get('retval')
-            log.debug("retval: %s", retval)
-            return retval
-        return inner
-    return outer
-
-
-@timeout(TIMEOUT)
-def pin_hash(qmHash, ipfs_conn, queue):
-    """ Pin an ipfs hash """
+def pin_hash(qmHash, ipfs_server, ipfs_port=5001):
+    """ Pin an ipfs hash using subprocess for timeout """
     log.debug("pin_hash")
-    res = ipfs_conn.pin_add(qmHash)
-    queue.put('retval', res)
+    cmd = ['pin_one', '-p', str(ipfs_port), ipfs_server, qmHash]
+    subprocess.run(cmd, timeout=TIMEOUT, check=True)
     log.debug("pin_hash+")
-    return res
 
 
 class Pinner(object):
@@ -55,6 +30,8 @@ class Pinner(object):
 
     def __init__(self, ipfs_server, ipfs_port=5001, redis_host='localhost', redis_port=6379):
         self.ipfs = None
+        self.ipfs_server = ipfs_server
+        self.ipfs_port = ipfs_port
         self.queue = None
         self.backlog = []
         self.dest_pins = []
@@ -92,10 +69,13 @@ class Pinner(object):
                 if message and message not in self.dest_pins:
                     log.debug("Starting pin thread for %s", message)
                     try:
-                        pin_hash(message, self.ipfs)
+                        pin_hash(message, self.ipfs_server, self.ipfs_port)
                         log.debug("Pinned {}".format(message))
-                    except Timeout as err:
+                    except subprocess.TimeoutExpired as err:
                         log.warning("Timeout has occurred when trying to pin %s. Returning it to the queue...", message)
+                        self.queue.append(message)
+                    except subprocess.CalledProcessError as err:
+                        log.warning("An unknown error has occurred when trying to pin %s. Returning it to the queue...", message)
                         self.queue.append(message)
                 elif message in self.dest_pins:
                     log.debug("Pin exists on destination node.")
